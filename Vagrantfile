@@ -71,8 +71,8 @@ Vagrant.configure(2) do |config|
     sudo apt-get upgrade -y
     sudo apt-get install -y git python-virtualenv libpq-dev python-dev postgresql postgresql-contrib
     sudo -u postgres psql -c "CREATE DATABASE db;"
-    sudo -u postgres psql -c "CREATE USER user WITH PASSWORD 'password';"
-    sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ebdb to user;"
+    sudo -u postgres psql -c "CREATE USER devuser WITH PASSWORD 'password';"
+    sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE db to devuser;"
     virtualenv /vagrant/env
     source /vagrant/env/bin/activate
     pip install -r /vagrant/mapop_admin/requirements.txt
