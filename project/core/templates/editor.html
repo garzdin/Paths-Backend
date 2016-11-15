@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Editor</title>
+    <link href='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css' rel='stylesheet' />
+  </head>
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+    }
+    #map {
+      width: 80%;
+      height: 100%;
+      float: left;
+    }
+    #container {
+      width: 20%;
+      height: 100%;
+      float: left;
+    }
+    .inner-container {
+      width: 90%;
+      margin: auto;
+      margin-top: 30px;
+    }
+    .inner-container input[type="text"] {
+      width: 100%;
+      height: 20px;
+      margin-top: 10px;
+      border: 1px solid rgb(210, 210, 210);
+    }
+    .inner-container textarea {
+      width: 100%;
+      height: 100px;
+      margin-top: 10px;
+      border: 1px solid rgb(210, 210, 210);
+    }
+    .inner-container input[type="submit"] {
+      width: 100%;
+      margin-top: 10px;
+    }
+  </style>
+  <body>
+    <div id="map"></div>
+    <div id="container">
+      <div class="inner-container">
+        {% if message %}
+        <ul class="messages">
+          <li{% if message.tag %} class="{{ message.tag }}"{% endif %}>{{ message.text }}</li>
+        </ul>
+        {% endif %}
+        <form method="POST" action="{% url 'core:editor' %}">{% csrf_token %}
+          <div class="path-props">
+            <input type="text" name="name" placeholder="Name">
+            <textarea name="description" placeholder="Description"></textarea>
+          </div>
+          <div class="poi-props"></div>
+          <input type="submit" value="Save">
+        </form>
+      </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha256-/SIrNqv8h6QGKDuNoLGA4iret+kyesCkHGzVUUV0shc=" crossorigin="anonymous"></script>
+    <script src='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js'></script>
+    <script>
+      $(document).ready(function() {
+        L.mapbox.accessToken = 'pk.eyJ1IjoidGVvZG9yZ2FyemRpbiIsImEiOiJjaWtsYnM0OWYwMDZ4d2FtNmFuOW13NDE3In0.b_wpLMr-hgmu3ncKfkAtAA';
+        var map = new L.mapbox.map('map', 'mapbox.streets');
+        var legend = L.mapbox.legendControl();
+        legend.addLegend("Click to add a marker");
+        legend.addLegend("Click on marker to remove it");
+        map.addControl(legend);
+        var latlngs = [];
+        index = 1;
+        map.on('click', function(e) {
+          latlngs.push(e.latlng);
+          var polyline = L.polyline(latlngs, {color: 'red'}).addTo(map);
+          var marker = L.marker(e.latlng).addTo(map);
+          marker.id = index++;
+          marker.on('click', function(e) {
+            removePOI(marker.id, e);
+            map.removeLayer(this);
+            map.removeLayer(polyline);
+            latlngs.splice(latlngs.indexOf(e.latlng), 1);
+          });
+          addPOI(marker.id, e);
+        });
+
+        function addPOI(id, e) {
+          $('form div.poi-props').append("\
+          <input type=\"text\" name=\"poi_" + id + "\" placeholder=\"POI " + id + " Title\">\
+          <input type=\"hidden\" name=\"poi_" + id+ "_lat\" value=\"" + e.latlng.lat + "\">\
+          <input type=\"hidden\" name=\"poi_" + id + "_lng\" value=\"" + e.latlng.lng + "\">");
+        }
+
+        function removePOI(id, e) {
+           $("form div.poi-props input[name=\"poi_" + id + "\"]").remove();
+           $("form div.poi-props input[name=\"poi_" + id + "_lat\"]").remove();
+           $("form div.poi-props input[name=\"poi_" + id + "_lng\"]").remove();
+        }
+      });
+    </script>
+  </body>
+</html>
