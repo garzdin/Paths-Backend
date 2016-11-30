@@ -7,6 +7,9 @@ class Path(models.Model):
     name = models.CharField("Name", max_length=255)
     description = models.TextField("Description")
 
+    def __str__(self):
+        return self.name
+
     def json(self):
         return {
             "id": self.id,
@@ -21,6 +24,9 @@ class POI(models.Model):
     latitude = models.FloatField("Latitude")
     longitude = models.FloatField("Longitude")
     path = models.ForeignKey(Path)
+
+    def __str__(self):
+        return self.name
 
     def json(self):
         return {
